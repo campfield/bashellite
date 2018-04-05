@@ -1,5 +1,4 @@
 # Change IFS so that only newline is word delimiter for repo_filter.conf processing
-    IFS=$'\n'
     set -x
     script_dir=$(pwd)
     repo_name="postgresql-yum"
@@ -7,8 +6,16 @@
     mirror_tld=$(pwd)
     mirror_repo_name="postgresql-yum"
 
+    IFS=$'\n'
+    filter_array_count=0
     for line in $(cat ${script_dir}/_metadata/${repo_name}/repo_filter.conf); do
-      unset IFS
+      filter_array[${filter_array_count}]=${line};
+      filter_array_count+=1
+    done
+    unset IFS
+
+    for (( i=0; i<${#filter_array[@]}; i++ )); do
+      line=${filter_array[$i]}
       # recurse_flag will be set for each line if "r " is at the beginning of the line
       recurse_flag=""
       if [[ "${line:0:2}" == "r " ]]; then
@@ -65,7 +72,5 @@
         echo "In the else";
       fi
       set +f
-      IFS=$'\n'
     done
-    unset IFS;
     set +x;
