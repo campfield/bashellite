@@ -1,0 +1,1 @@
+set -f; wget_args="-nH -np -r -A "*.rpm""; wget ${wget_args} https://download.postgresql.org/pub/repos/yum/10/fedora/fedora-25-x86_64/ | grep -oP "(?<=(URL: ))http.*(?=(\s*200 OK$))" | while read url; do echo "Downloaded $url"; done; set +f
