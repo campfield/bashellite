@@ -8,14 +8,15 @@
 
     IFS=$'\n'
     filter_array_count=0
+    filter_array=()
     for line in $(cat ${script_dir}/_metadata/${repo_name}/repo_filter.conf); do
       filter_array[${filter_array_count}]=${line};
-      filter_array_count+=1
+      filter_array_count=$[${filter_array_count}+1]
     done
     unset IFS
 
     for (( i=0; i<${#filter_array[@]}; i++ )); do
-      line=${filter_array[$i]}
+      line=${filter_array[${i}]}
       # recurse_flag will be set for each line if "r " is at the beginning of the line
       recurse_flag=""
       if [[ "${line:0:2}" == "r " ]]; then
