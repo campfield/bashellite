@@ -15,5 +15,5 @@ git_repos:
   - "bashellite"
   - "bashellite-providers"
   - "bashellite-configs"
-mirror_tld: "/mirror1"
-   
+mirror_tld: "/repos"
+
