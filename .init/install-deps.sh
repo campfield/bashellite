@@ -1,61 +1,88 @@
 #!/usr/bin/env bash
 
-echo -e "\n[INFO] Checking system compatibility with installer...";
-
 # Ensures yum is installed
-which yum &>/dev/null || echo "\n[FAIL] yum not installed and/or accessible; exiting."
+#which dnf &>/dev/null || (echo "\n[FAIL] dnf not installed and/or accessible; exiting."; exit 1)
 
-# Ensures system is CentOS
-grep "CentOS" /etc/redhat-release &>/dev/null || echo "[FAIL] Not a CentOS system; exiting."
+dnf clean all
 
-# Ensures system is EL7
-uname -r | grep "el7" &>/dev/null || echo "[FAIL] Not a EL7 system; exiting."
+# Needed for reposync
+dnf -y install dnf-plugins-core
+dnf -y install epel-release
+dnf config-manager --set-enabled powertools
+dnf -y install yum yum-utils
+/usr/bin/crb enable
+
+# The default Ruby version is too low for the rubygems
+#  provider.  Reset what module is in use and select Ruby 2.7.
+dnf module -y reset ruby
+dnf module -y enable ruby:2.7
 
 # Defines list of deps to be installed
-deps_array=( \
-              bash \
-              ncurses \
-              coreutils \
-              sed \
-              python-virtualenv \
-              wget \
-              rsync \
-              docker-common \
-              grep \
-              yum-utils \
-              createrepo \
-              python35u \
-              python2-pip \
-              perl \
-              less \
-              git \
-              ruby \
-              rubygems \
-           );
-# Check to see if python2-pip is available via package manager
-{ yum info python2-pip &>/dev/null && pkg_available=true; } || pkg_available=false;
+for PACKAGE in \
+  automake \
+  bash \
+  bison \
+  createrepo \
+  createrepo_c \
+  crudini \
+  curl \
+  dnf \
+  dpkg-devel \
+  gcc \
+  gdbm-devel \
+  git \
+  grep \
+  httpd \
+  jq \
+  less \
+  libffi-devel \
+  libtool \
+  libyaml-devel \
+  mlocate \
+  nano \
+  ncurses \
+  ncurses-devel \
+  openssl-devel \
+  perl \
+  perl-App-cpanminus \
+  podman-docker \
+  python2-pip \
+  python2-virtualenv \
+  python3 \
+  python3-pip \
+  python3-virtualenv \
+  readline-devel \
+  rpm-build \
+  rsync \
+  ruby \
+  rubygems \
+  screen \
+  sed \
+  tput \
+  wget \
+  which; do
 
-# Based on the install method/status, select the appropriate action to ensure pip is installed
-if ! ${pkg_available}; then
-  echo -e "\n[INFO] Installing EPEL repo..." \
-  && yum install -y epel-release \
-  && yum clean expire-cache \
-  && yum makecache;
+  dnf -y install $PACKAGE
+
+done
+
+for PACKAGE in hoe net-http-persistent rubygems-mirror; do
+  gem install $PACKAGE
+done
+
+cpanm CPAN::Mini
+
+pip3 install --upgrade pip
+
+if [[ -z $(which python) ]]; then
+  PYTHON3_BIN=$(which python3)
+  if [[ -z $PYTHON3_BIN ]]; then
+    echo "Binary for [python3] not found, exiting."
+    exit 1
+  else
+    ln -s $PYTHON3_BIN /usr/bin/python
+  fi
 fi
 
-# Check to see if python3.5 is available via package manager
-{ yum info python35u &>/dev/null && pkg_available=true; } || pkg_available=false;
-
-# Based on the install method/status, select the appropriate action to ensure python3.5 is installed
-if ! ${pkg_available}; then
-  echo -e "\n[INFO] Installing IUS repo..." \
-  && yum install -y "https://centos7.iuscommunity.org/ius-release.rpm" \
-  && yum clean expire-cache \
-  && yum makecache;
-fi
-
-# Installs other misc dependencies
-  echo -e "\n[INFO] Ensuring dependencies are installed and latest version..." \
-  && yum install -y ${deps_array[@]} \
-  && yum upgrade -y ${deps_array[@]};
-
+dnf -y upgrade --exclude=tzdata
+updatedb

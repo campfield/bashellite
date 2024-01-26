@@ -18,7 +18,7 @@ and you can not find a single tool that does this effectively, Bashellite might 
 Features
 ----------
 
-Bashellite includes many of the same configuration options used by the provider utils that it calls to perform mirroring. Bashellite simply gives these tools some sensible default flags/options, and a standardized, user-friendly, highly-configurable interface. Many of the options you would normally pass over the command-line are either imbedded in the script for you (if they are not something you typically change) or they have been farmed out to configuration files that you then populate with data (if they are something you typically change). This alleviates the need to remember cumbersome command-line flags for each of the underlying tools. Much of the heavy lifting is taken care of for you. 
+Bashellite includes many of the same configuration options used by the provider utils that it calls to perform mirroring. Bashellite simply gives these tools some sensible default flags/options, and a standardized, user-friendly, highly-configurable interface. Many of the options you would normally pass over the command-line are either imbedded in the script for you (if they are not something you typically change) or they have been farmed out to configuration files that you then populate with data (if they are something you typically change). This alleviates the need to remember cumbersome command-line flags for each of the underlying tools. Much of the heavy lifting is taken care of for you.
 
 As an example, Bashellite does syntax checking for you, and prints useful error messages when you make a mistake via it's robust, highly-greppable system of logs. It also has a dry-run mode that shows you exactly what it would do during a real run. However, it should be noted that since some of the underlying providers tools do not natively provide a dry-run mode themselves, Bashellite does the best it can to simulate a real run without downloading excess data or making changes to the filesystem.
 
@@ -121,7 +121,7 @@ Manual Installation of Bashellite
 
 ### EL7
 
-Once you've run `install-deps.sh` in the previous step, you will be ready to run the MakeFile to install Bashellite itself. This is as simple as running: 
+Once you've run `install-deps.sh` in the previous step, you will be ready to run the MakeFile to install Bashellite itself. This is as simple as running:
 
 ```
 sudo su;
@@ -215,14 +215,14 @@ The repo_url parameter line will be: repo_url="http:://your_http_url_here" OR "h
 The repo_provider parameter line will be: repo_provider="bandersnatch".
 
 
-## provider.conf files 
+## provider.conf files
 This file contains provider configs settings, package excludes/blacklists and/or package includes. This file has a different format, depending on which provider you selected. It is advisable for you to use the dry-run feature (-d flag) to hone your `provider.conf` before executing a live run. A sample config file for each provider is available in `/etc/bashellite/sample-${repo_provider}-provider.conf` for each provider type.
 
 #### rsync-formatted provider.conf
 If you are setting up a rsync repo, this is a rsync `--exclude` file. Refer to the main page for rsync to learn more about excludes, includes, and filters. In general, it is better to be explicit than ambiguous, so the preferred syntax for syncing rsync repos is the combined exclude/include rsync filter syntax which requires you to end your `provider.conf` with "-*" to ensure only the files you request above that line are grabbed. This will require you to specify each and every directory in a directory tree. For instance, if a tree looks like this: "centos -> 7 -> isos -> [files]" and you only want "[files]", your repo filter should have the following lines, in this order: "+ centos/", "+ centos/7/", "+ centos/7/isos/", "+ centos/7/isos/*", "- *". This will ensure that all other directories are excluded from your rsync, but everything inside of the "isos" subdirectory is grabbed and/or updated during each subsequent rsync run for this repo. The other supported format is the regular "exclude" syntax which require you to list the files and/or directories that you wish to exclude. Use the `bashellite` `-d` flag to test your filtering to ensure you are grabbing exactly the packages your wish to sync.
 
 #### wget-formatted provider.conf
-If you are setting up a wget-synced repo, simply include a list of each file or directory you would like to `wget`. The contents of this file are passed into `wget`. If a top-level file is wanted, then a line should specify the exact file name.  Any directories or file filters that are wanted, should prefix the line with "r "(note the space after the "r") to denote recursion is to be be used. Any directory names should end in "/" if you want just the folder downloaded. If you want the folder, and all it's contents, you'll use "<directory_name_here>/*". If you'd like to download just certain files (by extension) within a specific directory, use "<directory_name_here>/*.<file_extension>". If you want to download all files of a certain extension across all directories beneath the base URL you passed in via the `repo_url` parameter, just start the line with "r " and using globbing to specify the wildcards you would like it to match. 
+If you are setting up a wget-synced repo, simply include a list of each file or directory you would like to `wget`. The contents of this file are passed into `wget`. If a top-level file is wanted, then a line should specify the exact file name.  Any directories or file filters that are wanted, should prefix the line with "r "(note the space after the "r") to denote recursion is to be be used. Any directory names should end in "/" if you want just the folder downloaded. If you want the folder, and all it's contents, you'll use "<directory_name_here>/*". If you'd like to download just certain files (by extension) within a specific directory, use "<directory_name_here>/*.<file_extension>". If you want to download all files of a certain extension across all directories beneath the base URL you passed in via the `repo_url` parameter, just start the line with "r " and using globbing to specify the wildcards you would like it to match.
 
 Please note that any filename matching the glob "index.html*" has been inherently excluded for each iteration to avoid a mirroring of the pages as well as the content. Also note, that unlike the rsync filter, each line is read-in and acted upon in isolation; each line is read into Bashellite, `wget` is called for that one, specific line, then `wget` exits, and the next line is passed-in to a new instance of `wget`. This means that some lines may encompass the same files in their filter, for example, if you were to specify: "*.iso" on one line, and then "isos/*.iso" on a subsequent line, the later would be redundant and unnecessary, because the "*.iso" line should have already grabbed all iso files in all directories. Keep this in mind when designing your `provider.conf`.
 
@@ -241,13 +241,13 @@ Example Usage After Install is Complete
 
     # Mirrors a repository called "test_repo" inside the current working directory
     bashellite -m $(pwd) -r test_repo
-    
+
     # Mirrors a repository called "test_repo" inside the ${mirror_tld} directory specified in `/etc/bashellite/bashellite.conf`
     bashellite -r test_repo
-    
+
     # Mirrors a repository called "test_repo" inside a directory called "/mirrors"
     bashellite -m /mirrors -r test_repo
-    
+
     # Mirrors all repositories (${repo_name}) into "/mirrors" that have a `repo.conf` and `provider.conf` in `/etc/bashellite/repos.conf.d/${repo_name}"
     bashellite -m /mirrors -a
 
@@ -262,18 +262,18 @@ Bashellite has several built-in provisions for troubleshooting. Most importantly
 #### Log File Naming Schema
 Each repository gets two logs for each and every run Bashellite attempts. One log is the "event" log that documents STDOUT messages from the script and providers. The other log is an "error" log that records STDERR. The naming schema is as follows:
 
-    - /var/log/bashellite/<repo_name>.<YYMMDD>.<run_id>.error.log 
+    - /var/log/bashellite/<repo_name>.<YYMMDD>.<run_id>.error.log
     - /var/log/bashellite/<repo_name>.<YYMMDD>.<run_id>.event.log
 
 #### run_id
-The "run_id" is a number generated by the `date` command, and is part of each log name. It ensures that all logs from the same run have matching ids, while ensuring that runs for the same repo, on the same day, but from different runs, have different ids, and therefore slightly different log names. The run_ids are arranged in numerical and chronological order, so a lower numbered run_id will indicate that a run occurred earlier in the day when compared to another run from that same day with a higher run_id. 
+The "run_id" is a number generated by the `date` command, and is part of each log name. It ensures that all logs from the same run have matching ids, while ensuring that runs for the same repo, on the same day, but from different runs, have different ids, and therefore slightly different log names. The run_ids are arranged in numerical and chronological order, so a lower numbered run_id will indicate that a run occurred earlier in the day when compared to another run from that same day with a higher run_id.
 
 #### Message levels
-The script prints messages at three levels, and only has one level of verbosity. The message levels are `INFO`, `WARN`, and `FAIL`. `INFO` messages are strictly informational, and are provided for debugging and informational purposes; these are logged in the event log and sent to STDOUT on the terminal. `WARN` messages indicate a problem and are logged to the error log; `WARN` messages may or may not be followed by a `FAIL` message. If they are not, the script continues to execute. `FAIL` messages indicate an issue that is severe enough to warrant stopping execution of the script, and whenever a fail message is invoked, the script always returns a non-zero exit code. `FAIL` messages are logged in the error log, along with `WARN` messages. 
+The script prints messages at three levels, and only has one level of verbosity. The message levels are `INFO`, `WARN`, and `FAIL`. `INFO` messages are strictly informational, and are provided for debugging and informational purposes; these are logged in the event log and sent to STDOUT on the terminal. `WARN` messages indicate a problem and are logged to the error log; `WARN` messages may or may not be followed by a `FAIL` message. If they are not, the script continues to execute. `FAIL` messages indicate an issue that is severe enough to warrant stopping execution of the script, and whenever a fail message is invoked, the script always returns a non-zero exit code. `FAIL` messages are logged in the error log, along with `WARN` messages.
 
 #### Log entry numbers
 As you are watching output scroll by on the terminal, or reading the logs, you may notice a number on the left-hand side of some lines. These are log entry numbers. They are generated with the `date` command and are in both numerical and chronological order. the format is: HHMMSSNN, where "NN" is the first two digits of the nano-second. This log entry number ensures that no two entries will have the same number, and even lets you compare across the same time each day if your grep-fu is good. These numbers also appear on terminal output so that you can quickly find this same error in the logs. It is written to both simultaneously.
 
 #### Unlogged Errors
 On rare occasions, you may run into instances where Bashellite fails, but the error is not reported in a log. This is because Bashellite performs some preparatory administrative checks prior to logging being fully setup. If you come across an unlogged failure when invoking Bashellite from a cron job or other non-interactive method, try running it manually from the command-line under similar conditions (i.e. same user, etc.). This test may generate an error message that is printed to STDOUT, but not logged to `/var/log/bashellite`. If you still cannot figure out why the script is failing, there is a debug option in the script that can be toggled on/off by manually editing the Bashellite script itself. It is clearly marked and located towards the top of the file; this should only be used as a last resort due to it's verbosity.
- 
+
