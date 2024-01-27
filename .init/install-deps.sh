@@ -70,11 +70,11 @@ for PACKAGE in hoe net-http-persistent rubygems-mirror; do
   gem install $PACKAGE
 done
 
-cpanm CPAN::Mini
+# cpanm CPAN::Mini
 
 pip3 install --upgrade pip
 
-if [[ -z $(which python) ]]; then
+if [[ -z $(which python 2>/dev/null) ]]; then
   PYTHON3_BIN=$(which python3)
   if [[ -z $PYTHON3_BIN ]]; then
     echo "Binary for [python3] not found, exiting."
