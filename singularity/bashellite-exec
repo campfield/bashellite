@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#
+# Singularity calling script where the arguments are the commands to
+#  execute in the container (e.g., /bin/bash)
+#
+
+ARGS="${@:1}"
+LOCAL_PATH="$(dirname $0)"
+source "${LOCAL_PATH}/variables.sh"
+
+sudo singularity exec \
+  --writable-tmpfs \
+  --bind $BIND_PATHS \
+  $IMAGE_SANDBOX \
+  $ARGS

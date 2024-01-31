@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# Singularity calling script where the arguments are passed to the bashellite executable
+#  in the container.
+#
+
+ARGS="${@:1}"
+LOCAL_PATH="$(dirname $0)"
+source "${LOCAL_PATH}/variables.sh"
+
+sudo singularity run \
+  --writable-tmpfs \
+  --bind $BIND_PATHS \
+  $IMAGE_SANDBOX \
+  $ARGS
+

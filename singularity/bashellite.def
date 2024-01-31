@@ -1,0 +1,90 @@
+Bootstrap: docker
+From: rockylinux:8
+Stage: prep
+
+#
+# Singularity def file for creating the container holding all the needed
+#  bashellite binaries and scripts.
+#
+
+
+%labels
+	MAINTAINER Campfield, Michael (https://github.com/campfield)
+	PROGRAM bashellite
+	VERSION 2024.01.30
+
+%files
+
+%post -c /bin/bash
+
+
+# The following lines configure the locale which is a very
+#  annoying lack in Singularity containers.
+dnf -y install glibc-langpack-en
+localedef --no-archive -i en_US -f UTF-8 en_US.UTF-8
+
+dnf -y install git
+
+export LANG=en_US.UTF-8
+export BASE_PATH=/var/bashellite
+export MIRROR_PATH=/repos
+
+if [[ ! -d $BASE_PATH/sources ]]; then
+  mkdir -p $BASE_PATH/sources
+fi
+
+chmod -R 755 $BASE_PATH
+
+if [[ ! -d $MIRROR_PATH ]]; then
+  mkdir -p $MIRROR_PATH
+fi
+
+#
+# Download all of the repos for building and installing
+#  bashellite and the providers.
+#
+cd $BASE_PATH/sources
+
+git clone https://github.com/campfield/bashellite.git
+git clone https://github.com/campfield/bashellite-configs.git
+git clone https://github.com/campfield/bashellite-providers.git
+git clone https://github.com/campfield/apt-mirror
+
+
+#
+# Direct copy the apt-mirror script out of the apt-mirror repo to
+#  the bin path.  Probably could directly pull the one file from the
+#  repo but it wouldn't be as fun.
+#
+
+/bin/cp -f $BASE_PATH/sources/apt-mirror/apt-mirror /usr/local/bin
+chmod 755 /usr/local/bin/apt-mirror
+
+#
+# The bashellite .init directory has the deps install script and the
+#  make file which does most of the important stuff.
+#
+cd $BASE_PATH/sources/bashellite/.init || (echo "Unable to change directory to [$BASE_PATH/bashellite/.init], exiting."; exit 1)
+bash ./install-deps.sh
+make
+make all
+
+#
+# Call the script that installs the various provider bits.
+#
+/opt/bashellite/install_all_providers.sh
+
+#
+# Clean up any left over files and directories used during the
+#  install, basically rpm files and the repos we pulled from github.
+#
+dnf clean all
+/bin/rm -rf $BASE_PATH
+find /var/cache -type f -delete
+
+
+%environment
+export LANG=en_US.UTF-8
+
+%runscript
+exec /usr/local/bin/bashellite "$@"
