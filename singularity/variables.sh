@@ -6,5 +6,5 @@
 #
 IMAGE_NAME='bashellite'
 IMAGE_SANDBOX="/var/tmp/${IMAGE_NAME}.simg"
-IMAGE_CONTAINER="/var/tmp/${IMAGE_NAME}.sif"
+IMAGE_CONTAINER="/var/tmp/${IMAGE_NAME}"
 BIND_PATHS="/repos:/repos"
